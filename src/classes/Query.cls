@@ -906,11 +906,11 @@ public class Query {
             field = appendNamespace(field);
             if (null == fieldMap.get(field)) {
                 throw new QueryException('Cannot find ' + field +
-                        ' in object ' + objType.getDescribe().getName());
+                        ' in object ' + objectName);
             }
             if (!fieldMap.get(field).getDescribe().isAccessible()) {
                 throw new QueryException('Permission denied: ' +
-                        'cannot read ' + field + ' from ' + objType.getDescribe().getName());
+                        'cannot read ' + field + ' from ' + objectName);
             }
         }
 
@@ -1181,23 +1181,19 @@ public class Query {
     private static String namespace {
         get {
             if (namespace == null) {
-                namespace = getNamespaceFromOrg();
+                namespace = getNamespaceFromClass();
             }
             return namespace;
         }
     }
 
-    private static String getNamespaceFromOrg() {
-        List<Organization> orgList =
-            [ SELECT namespacePrefix FROM Organization ];
-
-        if (null == orgList || orgList.isEmpty()) {
-            return '';
-        } else if (null == orgList.get(0).namespacePrefix) {
-            return '';
-        } else {
-            return orgList.get(0).namespacePrefix + '__';
+    private static String getNamespaceFromClass() {
+        String className = Query.class.getName();
+        String namespace = className.split('\\.').get(0);
+        if (CLASS_IDENTIFIER.equalsIgnoreCase(namespace)) {
+            namespace = '';
         }
+        return namespace;
     }
 
     private class QueryException extends Exception {
@@ -1243,4 +1239,5 @@ public class Query {
         private List<Object> args;
     }
 
+    private static final String CLASS_IDENTIFIER = 'Query';
 }
