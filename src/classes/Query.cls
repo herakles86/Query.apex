@@ -898,21 +898,21 @@ public class Query {
 
     private Boolean checkFieldLevelSecurity(Schema.SObjectType objType, Set<String> fields) {
         // Get all the fields
-        final Map<String, Schema.SObjectField> fieldMap =
+                final Map<String, Schema.SObjectField> fieldMap =
             objType.getDescribe().fields.getMap();
 
         // Check field level security
         for (String field: fields) {
             field = appendNamespace(field);
-            if (null == fieldMap.get(field)) {
-                throw new QueryException('Cannot find ' + field +
+                if (null == fieldMap.get(field)) {
+                    throw new QueryException('Cannot find ' + field +
                         ' in object ' + objectName);
-            }
-            if (!fieldMap.get(field).getDescribe().isAccessible()) {
+                }
+                if (!fieldMap.get(field).getDescribe().isAccessible()) {
                 throw new QueryException('Permission denied: ' +
                         'cannot read ' + field + ' from ' + objectName);
+                }
             }
-        }
 
         return true;
     }
@@ -1188,12 +1188,14 @@ public class Query {
     }
 
     private static String getNamespaceFromClass() {
-        String className = Query.class.getName();
-        String namespace = className.split('\\.').get(0);
-        if (CLASS_IDENTIFIER.equalsIgnoreCase(namespace)) {
-            namespace = '';
+        final String className = Query.class.getName();
+        final List<String> nameSplit = className.split('\\.');
+
+        if (nameSplit.size() > 1) {
+            return nameSplit.get(0) + '__';
+        } else {
+            return '';
         }
-        return namespace;
     }
 
     private class QueryException extends Exception {
@@ -1238,6 +1240,4 @@ public class Query {
         private String conditionString;
         private List<Object> args;
     }
-
-    private static final String CLASS_IDENTIFIER = 'Query';
 }
